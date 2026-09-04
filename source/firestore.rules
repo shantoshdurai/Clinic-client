@@ -1,0 +1,215 @@
+rules_version = '2';
+
+// AS Clinic — Cloud Firestore security rules.
+//
+// These rules are the real access control. The app's UI hides screens by role,
+// but a modified client can call Firestore directly, so every rule below has
+// to hold on its own.
+//
+// Model:
+//   * `users/{uid}` holds the role for a Firebase Auth account. A signed-in
+//     account with no such document has no access to anything.
+//   * Roles: 'admin' (Super Admin), 'doctor', 'staff' (reception), 'customer'.
+//   * Only an admin writes clinic configuration — settings, doctors, accounts.
+//   * The single Super Admin is claimed once on a fresh project, and
+//     `clinic_settings/bootstrap` closes that door permanently.
+//
+// Collection names here match lib/services/firestore_service.dart exactly.
+// An earlier version referenced collections the app never wrote to (`visits`
+// rather than `op_visits`, and no rule at all for `cash_handovers`), so those
+// writes were being rejected in production.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------
+
+    function isAuthed() {
+      return request.auth != null;
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // A profile that exists and has not been deactivated by the admin.
+    function hasProfile() {
+      return isAuthed()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && profile().get('active', true) == true;
+    }
+
+    function role() {
+      return hasProfile() ? profile().get('role', '') : '';
+    }
+
+    function isAdmin()  { return role() == 'admin'; }
+    function isDoctor() { return role() == 'doctor' || isAdmin(); }
+
+    // Reception. Doctors and the admin inherit reception rights, since both
+    // legitimately work the desk in a single-room clinic.
+    function isStaff()  { return role() == 'staff' || isDoctor(); }
+
+    function isSelf(uid) {
+      return isAuthed() && request.auth.uid == uid;
+    }
+
+    // True once the clinic has claimed its Super Admin.
+    function bootstrapDone() {
+      return exists(/databases/$(database)/documents/clinic_settings/bootstrap);
+    }
+
+    // ---------------------------------------------------------------------
+    // 1. Clinic settings — admin-editable identity, readable by the app
+    // ---------------------------------------------------------------------
+
+    // The bootstrap marker. Readable by anyone so an unprovisioned install can
+    // offer the one-time setup screen; creatable exactly once, by the signed-in
+    // account claiming Super Admin; never deletable, which is what makes the
+    // claim permanent.
+    match /clinic_settings/bootstrap {
+      allow get, list: if true;
+      allow create: if isAuthed() && !bootstrapDone();
+      allow update, delete: if false;
+    }
+
+    match /clinic_settings/{docId} {
+      // Clinic name and contact details are shown before sign-in.
+      allow get, list: if true;
+      allow create: if isAdmin();
+      // The reception desk advances the patient-ID high-water mark as it
+      // registers patients; it may touch nothing else in this document.
+      allow update: if isAdmin()
+        || (isStaff()
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['patientIdStart', 'updatedAt', 'updatedByName']));
+      allow delete: if false;
+    }
+
+    // ---------------------------------------------------------------------
+    // 2. User accounts and roles
+    // ---------------------------------------------------------------------
+
+    match /users/{userId} {
+      allow get: if isSelf(userId) || isStaff();
+      allow list: if isStaff();
+
+      // Three ways an account document is created:
+      //  a) the admin provisions a doctor or reception login;
+      //  b) the one-time Super Admin claim, allowed only while no admin exists;
+      //  c) never by self-registration for a privileged role.
+      allow create: if
+        (isAdmin()
+          && request.resource.data.role in ['doctor', 'staff', 'customer'])
+        || (isSelf(userId)
+            && request.resource.data.role == 'admin'
+            && !bootstrapDone());
+
+      // The admin may edit anyone; a user may edit their own display fields
+      // but can never change their own role or reactivate themselves.
+      allow update: if isAdmin()
+        || (isSelf(userId)
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.get('active', true)
+                 == resource.data.get('active', true));
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // 3. Doctor roster
+    // ---------------------------------------------------------------------
+
+    match /doctors/{doctorId} {
+      // Doctor names and fees appear on the OP desk and on patient-facing
+      // screens, so they are readable to the app.
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // 4. Patient records and clinical data
+    //
+    // Everything below is health information. It is readable only by a
+    // signed-in clinic account with a role, never by the public and never by
+    // an authenticated account that the admin has not provisioned.
+    // ---------------------------------------------------------------------
+
+    match /patients/{patientId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isStaff();
+    }
+
+    match /appointments/{appointmentId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isStaff();
+    }
+
+    match /op_visits/{visitId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isStaff();
+    }
+
+    match /prescriptions/{prescriptionId} {
+      allow get, list: if isStaff();
+      allow create, update: if isDoctor() || isStaff();
+      allow delete: if isStaff();
+    }
+
+    // Consultation notes, including the doctor's private notes.
+    match /case_notes/{noteId} {
+      allow get, list: if isStaff();
+      allow create, update: if isDoctor() || isStaff();
+      allow delete: if isStaff();
+    }
+
+    // ---------------------------------------------------------------------
+    // 5. Money
+    // ---------------------------------------------------------------------
+
+    match /payments/{paymentId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      // Deleting a bill erases an audit trail — admin only.
+      allow delete: if isAdmin();
+    }
+
+    match /cash_handovers/{handoverId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isStaff();
+    }
+
+    // ---------------------------------------------------------------------
+    // 6. Pharmacy and attendance
+    // ---------------------------------------------------------------------
+
+    match /pharmacy_items/{itemId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    match /staff_attendance/{attendanceId} {
+      allow get, list: if isStaff();
+      allow create, update: if isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------
+    // 7. Default deny
+    //
+    // Any collection not named above is closed. Adding a feature means adding
+    // its rule here deliberately, rather than inheriting open access.
+    // ---------------------------------------------------------------------
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

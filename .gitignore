@@ -1,0 +1,30 @@
+﻿# Git ignore for Clinic-client
+
+# IDE and OS
+.DS_Store
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Build and temporary files
+**/build/
+**/coverage/
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+*.log
+*.pyc
+
+# Node modules in test folders
+**/node_modules/
+**/package-lock.json
+
+# Gradle caches
+**/.gradle/
+
+# Allow and track APK directory and release APK files
+!apk/
+!apk/*.apk

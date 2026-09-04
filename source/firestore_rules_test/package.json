@@ -1,0 +1,14 @@
+{
+  "name": "asclinic-firestore-rules-test",
+  "private": true,
+  "type": "module",
+  "description": "Behavioural tests for firestore.rules, run against the Firestore emulator.",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project asclinic-rules-test \"node rules.test.mjs\"",
+    "e2e": "firebase emulators:exec --only firestore,auth --project asclinic-6cd9b \"node workflow.e2e.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.10.0"
+  }
+}

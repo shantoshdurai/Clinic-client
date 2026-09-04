@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// AS Clinic — Cloud Storage rules.
+//
+// Mirrors the Firestore model: a file is reachable only by a signed-in account
+// that has a clinic role document, never by an anonymous or unprovisioned one.
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function hasProfile() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function role() {
+      return hasProfile()
+        ? firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.get('role', '')
+        : '';
+    }
+
+    function isAdmin() { return role() == 'admin'; }
+    function isStaff() {
+      return role() == 'staff' || role() == 'doctor' || isAdmin();
+    }
+
+    // Clinic logo and other branding shown before sign-in.
+    match /clinic_assets/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Prescription PDFs and lab reports are patient health information.
+    match /prescriptions/{prescriptionId}/{allPaths=**} {
+      allow read, write: if isStaff();
+    }
+
+    match /patient_documents/{patientId}/{allPaths=**} {
+      allow read, write: if isStaff();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
