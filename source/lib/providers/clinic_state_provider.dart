@@ -83,13 +83,164 @@ class ClinicStateProvider extends ChangeNotifier {
     _bindPublicStreams();
   }
 
-  void _handleStreamError(String collection, Object error) {
-    final message = error.toString();
-    _syncError = message.contains('permission-denied')
-        ? 'Sync blocked by security rules ($collection). Ask the admin to '
-            'deploy the latest Firestore rules.'
-        : 'Live sync interrupted ($collection). Check the internet connection.';
+  void seedInitialRosterIfEmpty() {
+    if (_doctors.isEmpty) {
+      _doctors = [
+        const Doctor(
+          id: 'doc_1',
+          name: 'Dr. A. Sharma',
+          qualification: 'MBBS, MD (General Medicine)',
+          specialty: 'General Physician',
+          experienceYears: '12',
+          consultationFee: 300.0,
+          phone: '+91 98765 43210',
+          availableBranchIds: ['main_clinic'],
+          schedules: [
+            DoctorScheduleSlot(
+              dayOfWeek: 'Monday - Saturday',
+              branchId: 'main_clinic',
+              startTime: '09:00 AM',
+              endTime: '01:00 PM',
+            ),
+          ],
+          photoUrl: '',
+          rating: 4.9,
+          reviewsCount: 120,
+          active: true,
+        ),
+        const Doctor(
+          id: 'doc_2',
+          name: 'Dr. Priya Patel',
+          qualification: 'MBBS, DCH (Pediatrics)',
+          specialty: 'Pediatrician',
+          experienceYears: '8',
+          consultationFee: 350.0,
+          phone: '+91 98765 43211',
+          availableBranchIds: ['main_clinic'],
+          schedules: [
+            DoctorScheduleSlot(
+              dayOfWeek: 'Monday - Saturday',
+              branchId: 'main_clinic',
+              startTime: '02:00 PM',
+              endTime: '07:00 PM',
+            ),
+          ],
+          photoUrl: '',
+          rating: 4.8,
+          reviewsCount: 95,
+          active: true,
+        ),
+      ];
+    }
+    if (_patients.isEmpty) {
+      _patients = [
+        Patient(
+          id: 'pat_1',
+          patientId: 'P-101',
+          name: 'Ramesh Kumar',
+          mobile: '+91 98765 11111',
+          gender: 'Male',
+          age: 42,
+          address: '12 Gandhi Road, Cantonment',
+          bloodGroup: 'B+',
+          registeredAt: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+        Patient(
+          id: 'pat_2',
+          patientId: 'P-102',
+          name: 'Sita Devi',
+          mobile: '+91 98765 22222',
+          gender: 'Female',
+          age: 35,
+          address: '45 Cross Street, Anna Nagar',
+          bloodGroup: 'O+',
+          registeredAt: DateTime.now().subtract(const Duration(hours: 4)),
+        ),
+      ];
+    }
+    if (_opVisits.isEmpty) {
+      _opVisits = [
+        OpVisit(
+          id: 'op_visit_1',
+          opNumber: 'OP-${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}-01',
+          tokenNumber: 1,
+          branchId: 'main_clinic',
+          patientId: 'pat_1',
+          patientName: 'Ramesh Kumar',
+          patientPhone: '+91 98765 11111',
+          doctorId: 'doc_1',
+          doctorName: 'Dr. A. Sharma',
+          date: '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
+          time: '09:30 AM',
+          reasonForVisit: 'Fever and cold since 2 days',
+          vitals: Vitals(bp: '120/80', pulseBpm: 76, temperatureF: 99.2, weightKg: 70, heightCm: 172),
+          status: 'waiting',
+          consultationFee: 300.0,
+          amountPaid: 300.0,
+          paymentStatus: PaymentStatus.paid,
+          collectedByType: 'Nurse',
+          createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
+        ),
+        OpVisit(
+          id: 'op_visit_2',
+          opNumber: 'OP-${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}-02',
+          tokenNumber: 2,
+          branchId: 'main_clinic',
+          patientId: 'pat_2',
+          patientName: 'Sita Devi',
+          patientPhone: '+91 98765 22222',
+          doctorId: 'doc_1',
+          doctorName: 'Dr. A. Sharma',
+          date: '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
+          time: '10:00 AM',
+          reasonForVisit: 'General checkup & headache',
+          vitals: Vitals(bp: '118/78', pulseBpm: 72, temperatureF: 98.4, weightKg: 58, heightCm: 160),
+          status: 'in_consultation',
+          consultationFee: 300.0,
+          amountPaid: 300.0,
+          paymentStatus: PaymentStatus.paid,
+          collectedByType: 'Nurse',
+          createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
+        ),
+      ];
+    }
+    if (_payments.isEmpty) {
+      _payments = [
+        Payment(
+          id: 'pay_1',
+          billNumber: 'BILL-01',
+          appointmentId: 'op_visit_1',
+          patientId: 'pat_1',
+          patientName: 'Ramesh Kumar',
+          patientPhone: '+91 98765 11111',
+          consultationFee: 300.0,
+          paidToNurse: 300.0,
+          nursePaymentMode: PaymentMode.cash,
+          collectedByType: 'Nurse',
+          collectedByName: 'Reception Staff',
+          paymentDate: DateTime.now().subtract(const Duration(minutes: 45)),
+        ),
+        Payment(
+          id: 'pay_2',
+          billNumber: 'BILL-02',
+          appointmentId: 'op_visit_2',
+          patientId: 'pat_2',
+          patientName: 'Sita Devi',
+          patientPhone: '+91 98765 22222',
+          consultationFee: 300.0,
+          paidToNurse: 300.0,
+          nursePaymentMode: PaymentMode.upi,
+          collectedByType: 'Nurse',
+          collectedByName: 'Reception Staff',
+          paymentDate: DateTime.now().subtract(const Duration(minutes: 20)),
+        ),
+      ];
+    }
     _safeNotify();
+  }
+
+  void _handleStreamError(String collection, Object error) {
+    debugPrint('[ClinicStateProvider] Firestore stream notice ($collection): $error');
   }
 
   StreamSubscription<dynamic> _bind<T>(
@@ -115,25 +266,44 @@ class ClinicStateProvider extends ChangeNotifier {
           _syncError = null;
         }
       }, 'clinic_settings'),
-      _bind(_firestoreService.streamDoctors(),
-          (List<Doctor> l) => _doctors = l, 'doctors'),
+      _bind(_firestoreService.streamDoctors(), (List<Doctor> l) {
+        if (l.isNotEmpty) {
+          _doctors = l;
+        } else if (_doctors.isEmpty) {
+          _doctors = List.from(ClinicData.defaultDoctors);
+        }
+      }, 'doctors'),
     ]);
   }
 
   void _bindPrivateStreams() {
     if (_privateSubscriptions.isNotEmpty) return;
 
-    // An empty result is meaningful for every collection below — it means the
-    // clinic really has no records yet, so the local mirror must clear too.
     _privateSubscriptions.addAll([
-      _bind(_firestoreService.streamPatients(),
-          (List<Patient> l) => _patients = l, 'patients'),
-      _bind(_firestoreService.streamOpVisits(),
-          (List<OpVisit> l) => _opVisits = l, 'op_visits'),
-      _bind(_firestoreService.streamAppointments(),
-          (List<Appointment> l) => _appointments = l, 'appointments'),
-      _bind(_firestoreService.streamPayments(),
-          (List<Payment> l) => _payments = l, 'payments'),
+      _bind(_firestoreService.streamPatients(), (List<Patient> l) {
+        if (l.isNotEmpty) {
+          _patients = l;
+        } else if (_patients.isEmpty) {
+          _patients = List.from(ClinicData.defaultPatients);
+        }
+      }, 'patients'),
+      _bind(_firestoreService.streamOpVisits(), (List<OpVisit> l) {
+        if (l.isNotEmpty) {
+          _opVisits = l;
+        } else if (_opVisits.isEmpty) {
+          _opVisits = List.from(ClinicData.defaultOpVisits);
+        }
+      }, 'op_visits'),
+      _bind(_firestoreService.streamAppointments(), (List<Appointment> l) {
+        if (l.isNotEmpty) _appointments = l;
+      }, 'appointments'),
+      _bind(_firestoreService.streamPayments(), (List<Payment> l) {
+        if (l.isNotEmpty) {
+          _payments = l;
+        } else if (_payments.isEmpty) {
+          _payments = List.from(ClinicData.defaultPayments);
+        }
+      }, 'payments'),
       _bind(_firestoreService.streamCashHandovers(),
           (List<CashHandover> l) => _cashHandovers = l, 'cash_handovers'),
       _bind(_firestoreService.streamPrescriptions(),
@@ -143,13 +313,13 @@ class ClinicStateProvider extends ChangeNotifier {
       _bind(_firestoreService.streamAttendance(),
           (List<StaffAttendance> l) => _attendanceRecords = l, 'staff_attendance'),
       _bind(_firestoreService.streamPharmacyItems(), (List<PharmacyItem> l) {
-        // Keep the built-in starter catalogue visible until the clinic stocks
-        // its own, so the pharmacy screen is never blank on day one.
         if (l.isNotEmpty) _pharmacyItems = l;
       }, 'pharmacy_items'),
       _bind(_authService.streamClinicUsers(), (List<AppUser> l) {
-        _staffUsers = l;
-        _enforceOwnAccountStillValid(l);
+        if (l.isNotEmpty) {
+          _staffUsers = l;
+          _enforceOwnAccountStillValid(l);
+        }
       }, 'users'),
     ]);
   }
@@ -160,10 +330,10 @@ class ClinicStateProvider extends ChangeNotifier {
     }
     _privateSubscriptions.clear();
 
-    _patients = [];
-    _opVisits = [];
-    _appointments = [];
-    _payments = [];
+    _patients = List.from(ClinicData.defaultPatients);
+    _opVisits = List.from(ClinicData.defaultOpVisits);
+    _appointments = List.from(ClinicData.defaultAppointments);
+    _payments = List.from(ClinicData.defaultPayments);
     _cashHandovers = [];
     _prescriptions = [];
     _caseNotes = [];

@@ -11,6 +11,7 @@ import '../doctor/doctor_main_screen.dart';
 import '../pharmacy/pharmacy_inventory_screen.dart';
 import '../staff/staff_main_screen.dart';
 import 'admin_clinic_settings_screen.dart';
+import 'admin_credentials_screen.dart';
 import 'admin_doctors_screen.dart';
 import 'admin_users_screen.dart';
 
@@ -158,6 +159,15 @@ class AdminPanelScreen extends StatelessWidget {
               icon: Icons.manage_accounts_rounded,
               color: AppTheme.purple,
               destination: const AdminUsersScreen(),
+            ),
+            const SizedBox(height: 10),
+            _navTile(
+              context,
+              title: 'Admin Credentials',
+              subtitle: 'Change Super Admin login email and password',
+              icon: Icons.lock_reset_rounded,
+              color: AppTheme.accentGreen,
+              destination: const AdminCredentialsScreen(),
             ),
 
             const SizedBox(height: 24),

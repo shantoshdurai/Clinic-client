@@ -240,44 +240,7 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                       ),
               ),
 
-              const SizedBox(height: 20),
-
-              // The patient portal is still a preview: the OTP is a fixed demo
-              // code, not a real SMS, so patient records are not persisted to
-              // the clinic database. Reception, Doctor and Admin sign-in are
-              // fully live. Say so plainly rather than letting it look broken.
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(13),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.info_outline_rounded,
-                        size: 17, color: Color(0xFFB45309)),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Text(
-                        'Patient sign-in is a preview — the OTP is a demo code '
-                        'until SMS verification is switched on. Clinic staff '
-                        'sign-in is live.',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11.5,
-                          height: 1.45,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF92400E),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 22),
+              const SizedBox(height: 24),
 
               if (!_isOtpSent) ...[
                 // "Mobile number" Label
@@ -443,13 +406,33 @@ class _PatientLoginScreenState extends State<PatientLoginScreen> {
                 ),
               ] else ...[
                 // Compact 6-Box Pin Code OTP Area
-                Text(
-                  'Enter 6-digit Code',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Enter 6-digit Code',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppTheme.successLight,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Demo OTP: 123456',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.success,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
 

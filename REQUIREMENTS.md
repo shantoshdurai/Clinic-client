@@ -1,4 +1,4 @@
-﻿# AS Clinic Management Application — Requirements & System Guide (`REQUIREMENTS.md`)
+# AS Clinic Management Application — Requirements & System Guide (`REQUIREMENTS.md`)
 
 > **Application**: AS Clinic Management System (`com.maac.asclinic`)  
 > **Release Package**: Android ARM64-v8a Release APK (`apk/app-arm64-v8a-release.apk`)  
@@ -96,13 +96,20 @@ The release APK is located in the repository under:
   adb install -r apk/app-arm64-v8a-release.apk
   ```
 
-### 4.2 Claiming Super Admin on First Boot
-1. Open the app on the phone.
-2. Tap **Clinic staff sign in** (top-right of the patient screen).
-3. In the yellow **"Clinic not set up yet"** panel, tap **Set up Super Admin**.
-4. Fill in:
-   - **Clinic Name**: (e.g. `AS Clinic`)
-   - **Administrator Name**: (e.g. `Dr. Shantosh`)
-   - **Admin Email & Password**: Login credentials for the admin
-   - **Setup Key**: `AS-CLINIC-SETUP-9271`
-5. Tap **Create Super Admin** to enter the Admin Panel and configure your clinic details and doctors.
+### 4.2 Pre-Configured Ready-to-Test Accounts
+The app comes pre-configured with active test credentials and **1-tap quick login buttons** on the Staff Login screen:
+
+| Role | Email | Password | Quick Button |
+|---|---|---|---|
+| **Super Admin** | `admin@clinic.com` | `admin123` | Tap **[ Super Admin ]** |
+| **Doctor** | `doctor@clinic.com` | `doctor123` | Tap **[ Doctor ]** |
+| **Reception Staff** | `staff@clinic.com` | `staff123` | Tap **[ Receptionist ]** |
+| **Patient Portal** | Any 10-digit mobile (e.g., `98765 43210`) | OTP: `123456` | Direct login from patient screen |
+
+### 4.3 Changing Super Admin Credentials
+The clinic owner / reviewer can update the Super Admin credentials at any time directly in the app:
+1. Log in as Super Admin (`admin@clinic.com` / `admin123`).
+2. Go to **Admin Console**.
+3. Under **Clinic Configuration**, tap **Admin Credentials**.
+4. Enter the new Administrator Name, Email, and Password.
+5. Tap **Save Changes**. The new credentials take effect immediately without requiring an app update.

@@ -40,11 +40,8 @@ class ClinicData {
 
   static List<ClinicBranch> defaultBranches = [mainClinic];
 
-  /// Empty by design. The Super Admin adds the clinic's real doctors under
-  /// Admin > Doctors, and they sync to every device immediately.
+  /// Doctors added dynamically or seeded via seedInitialRosterIfEmpty()
   static List<Doctor> defaultDoctors = [];
-
-  // Populated exclusively via Cloud Firestore and the Reception Desk.
   static List<Patient> defaultPatients = [];
   static List<Appointment> defaultAppointments = [];
   static List<OpVisit> defaultOpVisits = [];

@@ -24,5 +24,16 @@ class AppConfig {
 
   /// Minimum password length enforced on accounts created from the admin
   /// console (Firebase itself enforces 6).
-  static const int minPasswordLength = 8;
+  static const int minPasswordLength = 6;
+
+  /// Pre-configured initial credentials.
+  /// The admin can change their email & password anytime in Admin Settings.
+  static const String defaultAdminEmail = 'admin@clinic.com';
+  static const String defaultAdminPassword = 'admin123';
+
+  static const String defaultDoctorEmail = 'doctor@clinic.com';
+  static const String defaultDoctorPassword = 'doctor123';
+
+  static const String defaultStaffEmail = 'staff@clinic.com';
+  static const String defaultStaffPassword = 'staff123';
 }
