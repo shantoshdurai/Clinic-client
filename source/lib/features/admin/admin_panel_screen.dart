@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -35,30 +36,21 @@ class AdminPanelScreen extends StatelessWidget {
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
-          );
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(
-          titleSpacing: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 18, color: AppTheme.textPrimary),
-            onPressed: () {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
-                );
-              }
-            },
-          ),
+          automaticallyImplyLeading: false,
+          leading: Navigator.canPop(context)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 18, color: AppTheme.textPrimary),
+                  onPressed: () => Navigator.pop(context),
+                )
+              : null,
+          titleSpacing: Navigator.canPop(context) ? 0 : 20,
           backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         title: Row(
@@ -124,9 +116,6 @@ class AdminPanelScreen extends StatelessWidget {
               _syncBanner(context, state),
               const SizedBox(height: 16),
             ],
-
-            _revenueCard(state),
-            const SizedBox(height: 24),
 
             Text('Clinic Configuration', style: AppTheme.serifSubtitle(fontSize: 20)),
             const SizedBox(height: 4),
@@ -274,110 +263,6 @@ class AdminPanelScreen extends StatelessWidget {
             icon: const Icon(Icons.close, size: 16, color: Color(0xFF92400E)),
             onPressed: state.clearSyncError,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _revenueCard(ClinicStateProvider state) {
-    final total = state.todayTotalRevenue;
-    final upiShare = state.todayUpiSharePercent;
-    final cashShare = state.todayCashSharePercent;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF059669), Color(0xFF047857)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: AppTheme.glowGreenShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Today's Collections",
-                style: GoogleFonts.plusJakartaSans(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${state.todayPatientCount} patients',
-                  style: GoogleFonts.plusJakartaSans(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '₹${total.toInt()}',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          if (state.todayPendingDues > 0) ...[
-            const SizedBox(height: 4),
-            Text(
-              '₹${state.todayPendingDues.toInt()} still pending',
-              style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-          ],
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              _revenuePill(
-                total <= 0
-                    ? 'UPI / GPay: —'
-                    : 'UPI / GPay: ${upiShare.toStringAsFixed(0)}%',
-                Icons.qr_code_rounded,
-              ),
-              const SizedBox(width: 10),
-              _revenuePill(
-                total <= 0 ? 'Cash: —' : 'Cash: ${cashShare.toStringAsFixed(0)}%',
-                Icons.payments_outlined,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _revenuePill(String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: 6),
-          Text(label,
-              style: GoogleFonts.plusJakartaSans(
-                  color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.w700)),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/clinic_state_provider.dart';
@@ -49,10 +50,7 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
-          );
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -59,34 +60,27 @@ class _StaffMainScreenState extends State<StaffMainScreen> {
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
-          );
+          SystemNavigator.pop();
         }
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(
-          titleSpacing: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 18, color: AppTheme.textPrimary),
-            onPressed: () {
-              if (_currentIndex != 0) {
-                setState(() => _currentIndex = 0);
-                return;
-              }
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              } else {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
-                );
-              }
-            },
-          ),
+          automaticallyImplyLeading: false,
+          leading: _currentIndex != 0
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      size: 18, color: AppTheme.textPrimary),
+                  onPressed: () => setState(() => _currentIndex = 0),
+                )
+              : (Navigator.canPop(context)
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18, color: AppTheme.textPrimary),
+                      onPressed: () => Navigator.pop(context),
+                    )
+                  : null),
+          titleSpacing: (_currentIndex != 0 || Navigator.canPop(context)) ? 0 : 20,
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.transparent,
           title: Row(

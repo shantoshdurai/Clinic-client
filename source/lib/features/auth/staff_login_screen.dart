@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/app_config.dart';
 import '../../core/theme/app_theme.dart';
@@ -32,11 +33,25 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
   bool _obscurePassword = true;
   String? _errorMessage;
   bool _needsSetup = false;
+  bool _saveLogin = true;
 
   @override
   void initState() {
     super.initState();
     _checkBootstrapState();
+    _loadRememberedEmail();
+  }
+
+  Future<void> _loadRememberedEmail() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedEmail = prefs.getString('as_clinic_remembered_email');
+      if (savedEmail != null && savedEmail.isNotEmpty && mounted) {
+        setState(() {
+          _emailController.text = savedEmail;
+        });
+      }
+    } catch (_) {}
   }
 
   /// Offers the one-time Super Admin claim only while the clinic has none.
@@ -74,6 +89,14 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
         password: password,
       );
       if (!mounted) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      if (_saveLogin) {
+        await prefs.setString('as_clinic_remembered_email', email);
+      } else {
+        await prefs.remove('as_clinic_remembered_email');
+        await _authService.clearSavedSession();
+      }
 
       context.read<ClinicStateProvider>().setAuthenticatedUser(user);
       _routeForRole(user);
@@ -113,9 +136,10 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
         return;
     }
 
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => destination),
+      (route) => false,
     );
   }
 
@@ -294,19 +318,59 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: _isLoading ? null : _handleForgotPassword,
-                    child: Text(
-                      'Forgot password?',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primary,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: _isLoading
+                          ? null
+                          : () => setState(() => _saveLogin = !_saveLogin),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: Checkbox(
+                                value: _saveLogin,
+                                activeColor: AppTheme.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                onChanged: _isLoading
+                                    ? null
+                                    : (val) =>
+                                        setState(() => _saveLogin = val ?? true),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Save login',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                    TextButton(
+                      onPressed: _isLoading ? null : _handleForgotPassword,
+                      child: Text(
+                        'Forgot password?',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
 
