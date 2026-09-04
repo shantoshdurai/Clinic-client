@@ -34,7 +34,7 @@ AS Clinic is an outpatient healthcare management application designed for small 
 
 ### 3.1 Super Administrator & Dynamic Clinic Configuration
 - **One-Time Super Admin Claim**:
-  - On first launch, the clinic owner claims the Super Admin account via the setup screen gated by a secure Setup Key (`asclinic-superadmin-setup-2026`).
+  - On first launch, the clinic owner claims the Super Admin account via the setup screen gated by a secure Setup Key (`AS-CLINIC-SETUP-9271`).
   - Once claimed, the bootstrap gate permanently closes in both app logic and Firestore security rules.
 - **Dynamic Clinic Profile**:
   - Super Admin can change the clinic name, address, contact numbers, working hours, and default consultation fee in real-time.
@@ -104,5 +104,5 @@ The release APK is located in the repository under:
    - **Clinic Name**: (e.g. `AS Clinic`)
    - **Administrator Name**: (e.g. `Dr. Shantosh`)
    - **Admin Email & Password**: Login credentials for the admin
-   - **Setup Key**: `asclinic-superadmin-setup-2026`
+   - **Setup Key**: `AS-CLINIC-SETUP-9271`
 5. Tap **Create Super Admin** to enter the Admin Panel and configure your clinic details and doctors.
