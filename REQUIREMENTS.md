@@ -80,6 +80,16 @@ AS Clinic is an outpatient healthcare management application designed for small 
   - Reception staff can initiate a physical cash handover to the doctor at shift end.
   - Doctor reviews the amount and confirms receipt, maintaining an accountable audit trail.
 
+### 3.5 Session Persistence & Smart Navigation
+- **Persistent Auto-Login ("Save Login")**:
+  - On login, the session is saved securely on the device.
+  - Closing and reopening the app opens directly into the user's dashboard (Admin Console, Doctor Cabin, or Reception Desk) without prompting for passwords or displaying the patient welcome screen.
+  - A "Save login" option is available on the staff sign-in screen, with email remembering enabled.
+  - Sessions remain active until explicitly terminated via the **Sign out** button.
+- **Root App Back-Button Navigation**:
+  - Pressing the Android back button inside sub-tabs returns smoothly to the home tab.
+  - Pressing the back button on the root dashboard minimizes the application to the background rather than kicking the user back to the login screen.
+
 ---
 
 ## 4. Quick Setup & Device Installation
