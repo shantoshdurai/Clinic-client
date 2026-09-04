@@ -49,16 +49,44 @@ class _StaffMainScreenState extends State<StaffMainScreen> {
     final state = Provider.of<ClinicStateProvider>(context);
 
     return PopScope(
-      canPop: _currentIndex == 0,
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && _currentIndex != 0) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
           setState(() => _currentIndex = 0);
+          return;
+        }
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
+          );
         }
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
         appBar: AppBar(
-          titleSpacing: 16,
+          titleSpacing: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 18, color: AppTheme.textPrimary),
+            onPressed: () {
+              if (_currentIndex != 0) {
+                setState(() => _currentIndex = 0);
+                return;
+              }
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
+                );
+              }
+            },
+          ),
           backgroundColor: Colors.white,
           surfaceTintColor: Colors.transparent,
           title: Row(

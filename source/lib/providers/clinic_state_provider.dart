@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
+
+import '../services/firebase_config.dart';
 
 import '../core/constants/clinic_data.dart';
 import '../models/appointment.dart';
@@ -79,164 +82,30 @@ class ClinicStateProvider extends ChangeNotifier {
     _doctors = List.from(ClinicData.defaultDoctors);
     _pharmacyItems = List.from(ClinicData.defaultPharmacyItems);
 
-    _firestoreService.onStreamError = _handleStreamError;
+    _loadDoctorsLocally();
     _bindPublicStreams();
   }
 
-  void seedInitialRosterIfEmpty() {
-    if (_doctors.isEmpty) {
-      _doctors = [
-        const Doctor(
-          id: 'doc_1',
-          name: 'Dr. A. Sharma',
-          qualification: 'MBBS, MD (General Medicine)',
-          specialty: 'General Physician',
-          experienceYears: '12',
-          consultationFee: 300.0,
-          phone: '+91 98765 43210',
-          availableBranchIds: ['main_clinic'],
-          schedules: [
-            DoctorScheduleSlot(
-              dayOfWeek: 'Monday - Saturday',
-              branchId: 'main_clinic',
-              startTime: '09:00 AM',
-              endTime: '01:00 PM',
-            ),
-          ],
-          photoUrl: '',
-          rating: 4.9,
-          reviewsCount: 120,
-          active: true,
-        ),
-        const Doctor(
-          id: 'doc_2',
-          name: 'Dr. Priya Patel',
-          qualification: 'MBBS, DCH (Pediatrics)',
-          specialty: 'Pediatrician',
-          experienceYears: '8',
-          consultationFee: 350.0,
-          phone: '+91 98765 43211',
-          availableBranchIds: ['main_clinic'],
-          schedules: [
-            DoctorScheduleSlot(
-              dayOfWeek: 'Monday - Saturday',
-              branchId: 'main_clinic',
-              startTime: '02:00 PM',
-              endTime: '07:00 PM',
-            ),
-          ],
-          photoUrl: '',
-          rating: 4.8,
-          reviewsCount: 95,
-          active: true,
-        ),
-      ];
-    }
-    if (_patients.isEmpty) {
-      _patients = [
-        Patient(
-          id: 'pat_1',
-          patientId: 'P-101',
-          name: 'Ramesh Kumar',
-          mobile: '+91 98765 11111',
-          gender: 'Male',
-          age: 42,
-          address: '12 Gandhi Road, Cantonment',
-          bloodGroup: 'B+',
-          registeredAt: DateTime.now().subtract(const Duration(days: 2)),
-        ),
-        Patient(
-          id: 'pat_2',
-          patientId: 'P-102',
-          name: 'Sita Devi',
-          mobile: '+91 98765 22222',
-          gender: 'Female',
-          age: 35,
-          address: '45 Cross Street, Anna Nagar',
-          bloodGroup: 'O+',
-          registeredAt: DateTime.now().subtract(const Duration(hours: 4)),
-        ),
-      ];
-    }
-    if (_opVisits.isEmpty) {
-      _opVisits = [
-        OpVisit(
-          id: 'op_visit_1',
-          opNumber: 'OP-${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}-01',
-          tokenNumber: 1,
-          branchId: 'main_clinic',
-          patientId: 'pat_1',
-          patientName: 'Ramesh Kumar',
-          patientPhone: '+91 98765 11111',
-          doctorId: 'doc_1',
-          doctorName: 'Dr. A. Sharma',
-          date: '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
-          time: '09:30 AM',
-          reasonForVisit: 'Fever and cold since 2 days',
-          vitals: Vitals(bp: '120/80', pulseBpm: 76, temperatureF: 99.2, weightKg: 70, heightCm: 172),
-          status: 'waiting',
-          consultationFee: 300.0,
-          amountPaid: 300.0,
-          paymentStatus: PaymentStatus.paid,
-          collectedByType: 'Nurse',
-          createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
-        ),
-        OpVisit(
-          id: 'op_visit_2',
-          opNumber: 'OP-${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}-02',
-          tokenNumber: 2,
-          branchId: 'main_clinic',
-          patientId: 'pat_2',
-          patientName: 'Sita Devi',
-          patientPhone: '+91 98765 22222',
-          doctorId: 'doc_1',
-          doctorName: 'Dr. A. Sharma',
-          date: '${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}',
-          time: '10:00 AM',
-          reasonForVisit: 'General checkup & headache',
-          vitals: Vitals(bp: '118/78', pulseBpm: 72, temperatureF: 98.4, weightKg: 58, heightCm: 160),
-          status: 'in_consultation',
-          consultationFee: 300.0,
-          amountPaid: 300.0,
-          paymentStatus: PaymentStatus.paid,
-          collectedByType: 'Nurse',
-          createdAt: DateTime.now().subtract(const Duration(minutes: 20)),
-        ),
-      ];
-    }
-    if (_payments.isEmpty) {
-      _payments = [
-        Payment(
-          id: 'pay_1',
-          billNumber: 'BILL-01',
-          appointmentId: 'op_visit_1',
-          patientId: 'pat_1',
-          patientName: 'Ramesh Kumar',
-          patientPhone: '+91 98765 11111',
-          consultationFee: 300.0,
-          paidToNurse: 300.0,
-          nursePaymentMode: PaymentMode.cash,
-          collectedByType: 'Nurse',
-          collectedByName: 'Reception Staff',
-          paymentDate: DateTime.now().subtract(const Duration(minutes: 45)),
-        ),
-        Payment(
-          id: 'pay_2',
-          billNumber: 'BILL-02',
-          appointmentId: 'op_visit_2',
-          patientId: 'pat_2',
-          patientName: 'Sita Devi',
-          patientPhone: '+91 98765 22222',
-          consultationFee: 300.0,
-          paidToNurse: 300.0,
-          nursePaymentMode: PaymentMode.upi,
-          collectedByType: 'Nurse',
-          collectedByName: 'Reception Staff',
-          paymentDate: DateTime.now().subtract(const Duration(minutes: 20)),
-        ),
-      ];
-    }
-    _safeNotify();
+  static const String _prefDoctors = 'as_clinic_saved_doctors';
+
+  Future<void> _saveDoctorsLocally() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = _doctors.map((d) => d.toMap()).toList();
+      await prefs.setString(_prefDoctors, jsonEncode(list));
+    } catch (_) {}
+  }
+
+  Future<void> _loadDoctorsLocally() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefDoctors);
+      if (raw != null) {
+        final List<dynamic> list = jsonDecode(raw);
+        _doctors = list.map((m) => Doctor.fromMap(Map<String, dynamic>.from(m))).toList();
+        _safeNotify();
+      }
+    } catch (_) {}
   }
 
   void _handleStreamError(String collection, Object error) {
@@ -514,17 +383,18 @@ class ClinicStateProvider extends ChangeNotifier {
 
   Future<bool> saveDoctor(Doctor doctor) async {
     if (!isAdmin) return false;
-    final ok = await _firestoreService.saveDoctor(doctor);
-    if (ok) {
-      final idx = _doctors.indexWhere((d) => d.id == doctor.id);
-      if (idx == -1) {
-        _doctors = [..._doctors, doctor];
-      } else {
-        _doctors = [..._doctors]..[idx] = doctor;
-      }
-      _safeNotify();
+    final idx = _doctors.indexWhere((d) => d.id == doctor.id);
+    if (idx == -1) {
+      _doctors = [..._doctors, doctor];
+    } else {
+      _doctors = [..._doctors]..[idx] = doctor;
     }
-    return ok;
+    _safeNotify();
+    await _saveDoctorsLocally();
+    if (FirebaseConfig.isFirebaseConfigured) {
+      _firestoreService.saveDoctor(doctor);
+    }
+    return true;
   }
 
   /// Hides a doctor from new bookings without touching the visits, bills and
@@ -537,12 +407,13 @@ class ClinicStateProvider extends ChangeNotifier {
 
   Future<bool> deleteDoctor(String doctorId) async {
     if (!isAdmin) return false;
-    final ok = await _firestoreService.deleteDoctor(doctorId);
-    if (ok) {
-      _doctors = _doctors.where((d) => d.id != doctorId).toList();
-      _safeNotify();
+    _doctors = _doctors.where((d) => d.id != doctorId).toList();
+    _safeNotify();
+    await _saveDoctorsLocally();
+    if (FirebaseConfig.isFirebaseConfigured) {
+      _firestoreService.deleteDoctor(doctorId);
     }
-    return ok;
+    return true;
   }
 
   /// Stable, collision-free id for a new doctor record.

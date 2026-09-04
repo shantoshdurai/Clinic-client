@@ -96,20 +96,22 @@ The release APK is located in the repository under:
   adb install -r apk/app-arm64-v8a-release.apk
   ```
 
-### 4.2 Pre-Configured Ready-to-Test Accounts
-The app comes pre-configured with active test credentials and **1-tap quick login buttons** on the Staff Login screen:
+### 4.2 Super Admin Initial Access & User Account Setup
+The app provides a primary administrator account so the clinic owner / doctor can immediately enter and configure their clinic:
 
-| Role | Email | Password | Quick Button |
-|---|---|---|---|
-| **Super Admin** | `admin@clinic.com` | `admin123` | Tap **[ Super Admin ]** |
-| **Doctor** | `doctor@clinic.com` | `doctor123` | Tap **[ Doctor ]** |
-| **Reception Staff** | `staff@clinic.com` | `staff123` | Tap **[ Receptionist ]** |
-| **Patient Portal** | Any 10-digit mobile (e.g., `98765 43210`) | OTP: `123456` | Direct login from patient screen |
+- **Super Admin Email**: `admin@clinic.com`
+- **Super Admin Password**: `admin123`
+
+#### How to set up Doctors and Staff accounts:
+1. Sign in with the **Super Admin** credentials on the Staff Sign In screen.
+2. In the Admin Panel, go to **Clinic Configuration → Doctors** to add your doctors (name, specialty, fees, timing).
+3. Go to **Clinic Configuration → Login Accounts** and tap **+ New Account** to create login credentials (email & password) for each Doctor and Receptionist/Nurse.
+4. Staff and Doctors can now sign in with their respective accounts to access their dedicated cabin and front-desk consoles.
 
 ### 4.3 Changing Super Admin Credentials
-The clinic owner / reviewer can update the Super Admin credentials at any time directly in the app:
-1. Log in as Super Admin (`admin@clinic.com` / `admin123`).
+The clinic owner can change the administrator name, email, and password at any time:
+1. Sign in as Super Admin (`admin@clinic.com` / `admin123`).
 2. Go to **Admin Console**.
 3. Under **Clinic Configuration**, tap **Admin Credentials**.
 4. Enter the new Administrator Name, Email, and Password.
-5. Tap **Save Changes**. The new credentials take effect immediately without requiring an app update.
+5. Tap **Save Changes**. The updated credentials take effect immediately across all sessions.

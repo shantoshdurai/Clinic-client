@@ -113,10 +113,9 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
         return;
     }
 
-    Navigator.pushAndRemoveUntil(
+    Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => destination),
-      (route) => false,
     );
   }
 
@@ -339,137 +338,9 @@ class _StaffLoginScreenState extends State<StaffLoginScreen> {
                 ),
 
                 const SizedBox(height: 24),
-                Row(
-                  children: [
-                    const Expanded(child: Divider(color: AppTheme.border)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text(
-                        'QUICK 1-TAP LOGIN FOR TESTING',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                          color: AppTheme.textMuted,
-                        ),
-                      ),
-                    ),
-                    const Expanded(child: Divider(color: AppTheme.border)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: _quickRoleButton(
-                        title: 'Super Admin',
-                        subtitle: 'admin@clinic.com',
-                        icon: Icons.admin_panel_settings_rounded,
-                        color: AppTheme.purple,
-                        onTap: () async {
-                          final creds = await _authService.getAdminCredentials();
-                          _emailController.text = creds['email'] ?? AppConfig.defaultAdminEmail;
-                          _passController.text = creds['password'] ?? AppConfig.defaultAdminPassword;
-                          _handleLogin();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _quickRoleButton(
-                        title: 'Doctor',
-                        subtitle: 'doctor@clinic.com',
-                        icon: Icons.medical_services_rounded,
-                        color: AppTheme.secondary,
-                        onTap: () {
-                          _emailController.text = AppConfig.defaultDoctorEmail;
-                          _passController.text = AppConfig.defaultDoctorPassword;
-                          _handleLogin();
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _quickRoleButton(
-                        title: 'Receptionist',
-                        subtitle: 'staff@clinic.com',
-                        icon: Icons.support_agent_rounded,
-                        color: AppTheme.primary,
-                        onTap: () {
-                          _emailController.text = AppConfig.defaultStaffEmail;
-                          _passController.text = AppConfig.defaultStaffPassword;
-                          _handleLogin();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    'Super Admin credentials can be customized anytime under Admin Settings.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11.5,
-                      color: AppTheme.textMuted,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _quickRoleButton({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.25)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 20, color: color),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: color,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              subtitle,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
-                color: AppTheme.textMuted,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
         ),
       ),
     );

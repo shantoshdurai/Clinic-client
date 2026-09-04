@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/clinic_state_provider.dart';
+import '../auth/patient_login_screen.dart';
 import '../common/widgets/clinic_app_bar.dart';
 import 'customer_dashboard_tab.dart';
 import 'customer_history_tab.dart';
@@ -34,7 +35,27 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (_currentIndex != 0) {
+          setState(() {
+            _currentIndex = 0;
+            _openBookingForm = false;
+          });
+          return;
+        }
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
+          );
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppTheme.background,
       // Only show ClinicAppBar on non-home tabs to avoid duplicate headers/notifications
       appBar: _currentIndex == 0
@@ -89,6 +110,7 @@ class _CustomerMainScreenState extends State<CustomerMainScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

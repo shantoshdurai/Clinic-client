@@ -553,15 +553,50 @@ class AuthService {
     await _db.collection(colUsers).doc(uid).delete();
   }
 
-  Stream<List<AppUser>> streamClinicUsers() {
-    if (!FirebaseConfig.isFirebaseConfigured) return Stream.value(const []);
-    return _db.collection(colUsers).snapshots().map((snap) {
-      return snap.docs
-          .map((d) => AppUser.fromMap(d.data(), uid: d.id))
-          .where((u) => u.role != UserRole.customer)
-          .toList()
-        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-    });
+  Future<List<AppUser>> getLocalStaffUsers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final localUsersJson = prefs.getString(_prefLocalUsers);
+      if (localUsersJson != null) {
+        final List<dynamic> list = jsonDecode(localUsersJson);
+        return list.map((item) {
+          return AppUser(
+            id: item['id'] ?? 'user_${item['email']}',
+            name: item['name'] ?? item['email'],
+            emailOrPhone: item['email'],
+            role: item['role'] == 'doctor' ? UserRole.doctor : UserRole.staff,
+            branchId: item['branchId'] ?? 'main_clinic',
+            doctorId: item['doctorId'],
+            staffId: item['staffId'],
+            phone: item['phone'],
+            active: item['active'] ?? true,
+            createdAt: DateTime.now(),
+          );
+        }).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  Stream<List<AppUser>> streamClinicUsers() async* {
+    final local = await getLocalStaffUsers();
+    yield local;
+    if (FirebaseConfig.isFirebaseConfigured) {
+      yield* _db.collection(colUsers).snapshots().map((snap) {
+        final online = snap.docs
+            .map((d) => AppUser.fromMap(d.data(), uid: d.id))
+            .where((u) => u.role != UserRole.customer)
+            .toList();
+        final combined = [...online];
+        for (final loc in local) {
+          if (!combined.any((u) => u.emailOrPhone == loc.emailOrPhone)) {
+            combined.add(loc);
+          }
+        }
+        combined.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        return combined;
+      });
+    }
   }
 
   String _messageForAuthCode(String code) {

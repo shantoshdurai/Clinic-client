@@ -28,18 +28,38 @@ class AdminPanelScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<ClinicStateProvider>();
 
-    final needsClinicDetails = state.settings.phone.trim().isEmpty ||
-        state.settings.address.trim().isEmpty;
-    final needsDoctor = state.doctors.isEmpty;
-    final needsStaff =
-        state.staffUsers.where((u) => u.role != UserRole.admin).isEmpty;
-    final setupIncomplete = needsClinicDetails || needsDoctor || needsStaff;
-
-    return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppBar(
-        titleSpacing: 20,
-        backgroundColor: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppTheme.background,
+        appBar: AppBar(
+          titleSpacing: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 18, color: AppTheme.textPrimary),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PatientLoginScreen()),
+                );
+              }
+            },
+          ),
+          backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         title: Row(
           children: [
@@ -103,16 +123,6 @@ class AdminPanelScreen extends StatelessWidget {
             if (state.syncError != null) ...[
               _syncBanner(context, state),
               const SizedBox(height: 16),
-            ],
-
-            if (setupIncomplete) ...[
-              _setupChecklist(
-                context,
-                needsClinicDetails: needsClinicDetails,
-                needsDoctor: needsDoctor,
-                needsStaff: needsStaff,
-              ),
-              const SizedBox(height: 20),
             ],
 
             _revenueCard(state),
@@ -231,6 +241,7 @@ class AdminPanelScreen extends StatelessWidget {
             const SizedBox(height: 28),
           ],
         ),
+        ),
       ),
     );
   }
@@ -264,106 +275,6 @@ class AdminPanelScreen extends StatelessWidget {
             onPressed: state.clearSyncError,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _setupChecklist(
-    BuildContext context, {
-    required bool needsClinicDetails,
-    required bool needsDoctor,
-    required bool needsStaff,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppTheme.primaryLight, width: 1.5),
-        boxShadow: AppTheme.cardShadow,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.checklist_rounded,
-                  size: 20, color: AppTheme.primaryDark),
-              const SizedBox(width: 10),
-              Text('Finish setting up',
-                  style: AppTheme.serifSubtitle(fontSize: 18)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Three steps and the clinic is ready for real patients.',
-            style: GoogleFonts.plusJakartaSans(
-                fontSize: 12.5, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: 14),
-          _checklistRow(
-            context,
-            done: !needsClinicDetails,
-            label: 'Add clinic address and phone number',
-            destination: const AdminClinicSettingsScreen(),
-          ),
-          _checklistRow(
-            context,
-            done: !needsDoctor,
-            label: 'Add the clinic\'s doctor(s)',
-            destination: const AdminDoctorsScreen(),
-          ),
-          _checklistRow(
-            context,
-            done: !needsStaff,
-            label: 'Create a reception desk login',
-            destination: const AdminUsersScreen(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _checklistRow(
-    BuildContext context, {
-    required bool done,
-    required String label,
-    required Widget destination,
-  }) {
-    return InkWell(
-      onTap: done
-          ? null
-          : () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => destination),
-              ),
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Icon(
-              done ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-              size: 19,
-              color: done ? AppTheme.success : AppTheme.textMuted,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: done ? AppTheme.textMuted : AppTheme.textPrimary,
-                  decoration: done ? TextDecoration.lineThrough : null,
-                ),
-              ),
-            ),
-            if (!done)
-              const Icon(Icons.chevron_right_rounded,
-                  size: 18, color: AppTheme.textMuted),
-          ],
-        ),
       ),
     );
   }

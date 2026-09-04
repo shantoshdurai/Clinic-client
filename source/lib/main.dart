@@ -41,7 +41,6 @@ class ClinicApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) {
             final provider = ClinicStateProvider();
-            provider.seedInitialRosterIfEmpty();
             if (restoredUser != null) {
               provider.setAuthenticatedUser(restoredUser!);
             }
